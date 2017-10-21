@@ -13,7 +13,7 @@ namespace SentencesFuzzyComparison {
 
         public int SubtokenLength { get; private set; }
 
-        public FuzzyComparer(double aThresholdSentence = 0.3, int aMinWordLength = 3, int aSubtokenLength = 2) {
+        public FuzzyComparer(double aThresholdSentence = 0.3, double aThresholdWord = 0.7, int aMinWordLength = 3, int aSubtokenLength = 2) {
             if (aThresholdSentence <= 0) {
                 throw new ArgumentException("A threshhold for sentence can not be less than or equal to 0.");
             }
@@ -29,9 +29,11 @@ namespace SentencesFuzzyComparison {
             if (aSubtokenLength > aMinWordLength) {
                 throw new ArgumentException("A subtoken length can not be larger than MinWordLength.");
             }
-
+            
             ThresholdSentence = aThresholdSentence;
+            ThresholdWord = aThresholdWord;
             MinWordLength = aMinWordLength;
+            SubtokenLength = aSubtokenLength;
         }
 
         public bool IsFuzzyEqual(string first, string second) {
@@ -73,6 +75,7 @@ namespace SentencesFuzzyComparison {
                         if (IsTokensFuzzyEqual(tokensFirst[i], tokensSecond[j])) {
                             equalsTokens.Add(tokensFirst[i]);
                             usedToken[j] = true;
+                            break;
                         }
                     }
                 }
@@ -84,14 +87,15 @@ namespace SentencesFuzzyComparison {
         private bool IsTokensFuzzyEqual(string firstToken, string secondToken) {
             var equalSubtokensCount = 0;
             var usedTokens = new bool[secondToken.Length - SubtokenLength + 1];
-            for (var i = 0; i < firstToken.Length - SubtokenLength + 1; ++i) {                
+            for (var i = 0; i < firstToken.Length - SubtokenLength + 1; ++i) {
+                var subtokenFirst = firstToken.Substring(i, SubtokenLength);
                 for (var j = 0; j < secondToken.Length - SubtokenLength + 1; ++j) {
-                    if (!usedTokens[j]) {
-                        var subtokenFirst = firstToken.Substring(i, SubtokenLength);
+                    if (!usedTokens[j]) {                        
                         var subtokenSecond = secondToken.Substring(j, SubtokenLength);
                         if (subtokenFirst.Equals(subtokenSecond)) {
                             equalSubtokensCount++;
                             usedTokens[j] = true;
+                            break;
                         }
                     }                    
                 }
