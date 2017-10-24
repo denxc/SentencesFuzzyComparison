@@ -13,7 +13,7 @@ namespace SentencesFuzzyComparison {
 
         public int SubtokenLength { get; private set; }
 
-        public FuzzyComparer(double aThresholdSentence = 0.3, double aThresholdWord = 0.5, int aMinWordLength = 3, int aSubtokenLength = 2) {
+        public FuzzyComparer(double aThresholdSentence = 0.25, double aThresholdWord = 0.45, int aMinWordLength = 3, int aSubtokenLength = 2) {
             if (aThresholdSentence <= 0) {
                 throw new ArgumentException("A threshhold for sentence can not be less than or equal to 0.");
             }
