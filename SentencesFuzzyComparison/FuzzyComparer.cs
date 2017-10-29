@@ -3,16 +3,42 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace SentencesFuzzyComparison {
+    /// <summary>
+    /// Выполняет нечеткое сравнение строк.
+    /// </summary>
     public class FuzzyComparer {
 
+        /// <summary>
+        /// Порог принятия предложений эквивалентными.
+        /// Характеризует отношение количества одинаковых слов 
+        /// к количеству различных.
+        /// </summary>
         public double ThresholdSentence { get; private set; }
 
+        /// <summary>
+        /// Порог принятия слов эквивалентными.
+        /// Характеризует отношение количества одинаковых подстрок
+        /// к количеству различных.
+        /// </summary>
         public double ThresholdWord { get; private set; }
 
+        /// <summary>
+        /// Минимальная длина слова.
+        /// </summary>
         public int MinWordLength { get; private set; }
 
+        /// <summary>
+        /// Длина подстроки при сравнении слов.
+        /// </summary>
         public int SubtokenLength { get; private set; }
 
+        /// <summary>
+        /// Создает нечесткий компаратор.
+        /// </summary>
+        /// <param name="aThresholdSentence">Порог принятия предложений эквивалентными.</param>
+        /// <param name="aThresholdWord">Порог принятия слов эквивалентными.</param>
+        /// <param name="aMinWordLength">Минимальная длина слова.</param>
+        /// <param name="aSubtokenLength">длина подстроки при сравнении слов.</param>
         public FuzzyComparer(double aThresholdSentence = 0.25, double aThresholdWord = 0.45, int aMinWordLength = 3, int aSubtokenLength = 2) {
             if (aThresholdSentence <= 0) {
                 throw new ArgumentException("A threshhold for sentence can not be less than or equal to 0.");
@@ -36,10 +62,22 @@ namespace SentencesFuzzyComparison {
             SubtokenLength = aSubtokenLength;
         }
 
+        /// <summary>
+        /// Возвращает результат нечеткого сравнения предложений.
+        /// </summary>
+        /// <param name="first">Первое предложение.</param>
+        /// <param name="second">Второе предложение.</param>
+        /// <returns>True - если результат выше порога, False - иначе.</returns>
         public bool IsFuzzyEqual(string first, string second) {
             return ThresholdSentence <= CalculateFuzzyEqualValue(first, second);
         }
 
+        /// <summary>
+        /// Вычисляет значение нечеткого сравнения предложений.
+        /// </summary>
+        /// <param name="first">Первое предложение.</param>
+        /// <param name="second">Второе предложение.</param>
+        /// <returns>Результат нечеткого сравнения предложений.</returns>
         public double CalculateFuzzyEqualValue(string first, string second) {
             if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(second)) {
                 return 1.0;
@@ -66,6 +104,12 @@ namespace SentencesFuzzyComparison {
             return resultValue;
         }
 
+        /// <summary>
+        /// Возвращает эквивалентные слова из двух наборов.
+        /// </summary>
+        /// <param name="tokensFirst">Слова из первого предложения.</param>
+        /// <param name="tokensSecond">Слова из второго набора предложений.</param>
+        /// <returns>Набор эквивалентных слов.</returns>
         private string[] GetFuzzyEqualsTokens(string[] tokensFirst, string[] tokensSecond) {
             var equalsTokens = new List<string>();
             var usedToken = new bool[tokensSecond.Length];
@@ -84,6 +128,12 @@ namespace SentencesFuzzyComparison {
             return equalsTokens.ToArray();
         }
 
+        /// <summary>
+        /// Возвращает результат нечеткого сравнения слов.
+        /// </summary>
+        /// <param name="firstToken">Первое слово.</param>
+        /// <param name="secondToken">Второе слово.</param>
+        /// <returns>Результат нечеткого сравения слов.</returns>
         private bool IsTokensFuzzyEqual(string firstToken, string secondToken) {
             var equalSubtokensCount = 0;
             var usedTokens = new bool[secondToken.Length - SubtokenLength + 1];
@@ -109,6 +159,11 @@ namespace SentencesFuzzyComparison {
             return ThresholdWord <= tanimoto; 
         }
 
+        /// <summary>
+        /// Разбивает предложение на слова. 
+        /// </summary>
+        /// <param name="sentence">Предложение.</param>
+        /// <returns>Набор слов.</returns>
         private string[] GetTokens(string sentence) {
             var tokens = new List<string>();
             var words = sentence.Split(' ');
@@ -121,6 +176,13 @@ namespace SentencesFuzzyComparison {
             return tokens.ToArray();
         }
 
+        /// <summary>
+        /// Приводит предложение к нормальному виду:
+        /// - в нижнем регистре
+        /// - удалены не буквы и не цифры
+        /// </summary>
+        /// <param name="sentence">Предложение.</param>
+        /// <returns>Нормализованное предложение.</returns>
         private string NormalizeSentence(string sentence) {
             var resultContainer = new StringBuilder(100);
             var lowerSentece = sentence.ToLower();
@@ -133,6 +195,11 @@ namespace SentencesFuzzyComparison {
             return resultContainer.ToString();
         }
 
+        /// <summary>
+        /// Возвращает признак подходящего символа.
+        /// </summary>
+        /// <param name="c">Символ.</param>
+        /// <returns>True - если символ буква или цифра или пробел, False - иначе.</returns>
         private bool IsNormalChar(char c) {
             return char.IsLetterOrDigit(c) || c == ' ';
         }
